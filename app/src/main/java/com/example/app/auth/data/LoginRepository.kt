@@ -16,8 +16,8 @@ class LoginRepository(val dataSource: LoginDataSource) {
         dataSource.logout()
     }
 
-    fun login(context: Context, username: String, password: String): Boolean{
+    fun login(context: Context, username: String, password: String){
         // handle login
-        return dataSource.login(context, username, password)
+        dataSource.login(context, username, password)
     }
 }

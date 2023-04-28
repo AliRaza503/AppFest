@@ -11,6 +11,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.app.MainActivity
 import com.example.app.R
+import com.example.app.auth.data.LoginDataSource
 import com.example.app.auth.ui.ViewModelFactory
 import com.example.app.auth.ui.signup.SignupActivity
 import com.example.app.databinding.ActivityLoginBinding
@@ -75,13 +76,19 @@ class LoginActivity : AppCompatActivity() {
 
             setOnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                        val ret = loginViewModel.login(
+                        loginViewModel.login(
                             context,
                             email.text.toString(),
                             password.text.toString()
                         )
-                    if (!ret) {
+                    if (LoginDataSource.success.value == false) {
                         restartActivity()
+                    }
+                    else {
+                        val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                        intent.putExtra(INTENT_PASS, FirebaseAuth.getInstance().currentUser)
+                        startActivity(intent)
+                        finish()
                     }
                 }
                 false
@@ -89,9 +96,15 @@ class LoginActivity : AppCompatActivity() {
 
             login.setOnClickListener {
                 loading.visibility = View.VISIBLE
-                val ret = loginViewModel.login(context, email.text.toString(), password.text.toString())
-                if (!ret) {
+                loginViewModel.login(context, email.text.toString(), password.text.toString())
+                if (LoginDataSource.success.value == false) {
                     restartActivity()
+                }
+                else {
+                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    intent.putExtra(INTENT_PASS, FirebaseAuth.getInstance().currentUser)
+                    startActivity(intent)
+                    finish()
                 }
             }
         }
