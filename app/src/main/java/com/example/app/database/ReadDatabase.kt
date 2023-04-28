@@ -2,19 +2,21 @@ package com.example.app.database
 
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import com.example.app.model.AyatData
+import kotlinx.coroutines.awaitCancellation
 import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.xssf.usermodel.XSSFCell
 import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.IOException
 import java.io.InputStream
+import kotlin.jvm.Throws
 
 object ReadDatabase {
     var ayatList: ArrayList<AyatData>? = null
-
-    fun initDatabase(context: Context) {
-        ayatList = ArrayList<AyatData>()
+    suspend fun initDatabase(context: Context): ArrayList<AyatData> {
+        ayatList = ArrayList()
         var assetInStream: InputStream? = null
 
         try {
@@ -106,6 +108,9 @@ object ReadDatabase {
         } finally {
             assetInStream?.close()
         }
+        return ayatList!!
     }
-
+    fun getAyatDataList(): ArrayList<AyatData>{
+        return ayatList!!
+    }
 }

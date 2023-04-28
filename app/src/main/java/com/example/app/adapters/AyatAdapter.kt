@@ -28,7 +28,6 @@ class AayatAdapter(private val aayatList: ArrayList<AyatData>):
         val ayatNo:TextView = itemView.findViewById(R.id.ayatNo)
         val translation:TextView = itemView.findViewById(R.id.translation_text)
         val transliteration:TextView = itemView.findViewById(R.id.roman_text)
-        val bookMark:ImageView = itemView.findViewById(R.id.bookmark)
         val parent:ConstraintLayout = itemView.findViewById(R.id.parent)
         val layout:LinearLayout = itemView.findViewById(R.id.linearLayout2)
     }
