@@ -1,5 +1,6 @@
 package com.example.app.auth.data
 
+import android.content.Context
 import com.example.app.auth.data.model.LoggedInUser
 
 /**
@@ -8,17 +9,15 @@ import com.example.app.auth.data.model.LoggedInUser
  */
 class LoginRepository(val dataSource: LoginDataSource) {
 
-    var isLoggedIn: Boolean = false
-
-
+    private var isLoggedIn: Boolean = false
     fun logout() {
         LoggedInUser.user = null
         isLoggedIn = false
         dataSource.logout()
     }
 
-    fun login(username: String, password: String){
+    fun login(context: Context, username: String, password: String): Boolean{
         // handle login
-        dataSource.login(username, password)
+        return dataSource.login(context, username, password)
     }
 }

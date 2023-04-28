@@ -1,25 +1,27 @@
 package com.example.app.auth.ui.login
 
-import android.app.Activity
 import android.content.Intent
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.EditText
 import android.widget.Toast
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.example.app.MainActivity
 import com.example.app.R
+import com.example.app.auth.ui.ViewModelFactory
+import com.example.app.auth.ui.signup.SignupActivity
 import com.example.app.databinding.ActivityLoginBinding
+import com.example.app.extras.afterTextChanged
 import com.google.firebase.auth.FirebaseAuth
 
 
 class LoginActivity : AppCompatActivity() {
+    companion object {
+        const val INTENT_PASS = "EXTRA_ID"
+    }
 
     private lateinit var loginViewModel: LoginViewModel
     private lateinit var binding: ActivityLoginBinding
@@ -28,14 +30,19 @@ class LoginActivity : AppCompatActivity() {
 
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        //Click listener to go for signup
+        binding.signupBtn.setOnClickListener {
+            val intent = Intent(this, SignupActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
         val email = binding.email
         val password = binding.password
-        val login = binding.loginBtn
+        val login = binding.signinBtn
         val loading = binding.loading
 
         loginViewModel =
-            ViewModelProvider(this, LoginViewModelFactory())[LoginViewModel::class.java]
+            ViewModelProvider(this, ViewModelFactory())[LoginViewModel::class.java]
 
         loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
             val loginState = it ?: return@Observer
@@ -49,21 +56,6 @@ class LoginActivity : AppCompatActivity() {
             if (loginState.passwordError != null) {
                 password.error = getString(loginState.passwordError)
             }
-        })
-
-        loginViewModel.loginResult.observe(this@LoginActivity, Observer {
-            val loginResult = it ?: return@Observer
-            loading.visibility = View.GONE
-            if (loginResult.error != null) {
-                showLoginFailed(loginResult.error)
-            }
-            if (loginResult.success != null) {
-                updateUiWithUser(loginResult.success)
-            }
-            setResult(Activity.RESULT_OK)
-
-            //Complete and destroy login activity once successful
-            finish()
         })
 
         email.afterTextChanged {
@@ -82,21 +74,34 @@ class LoginActivity : AppCompatActivity() {
             }
 
             setOnEditorActionListener { _, actionId, _ ->
-                when (actionId) {
-                    EditorInfo.IME_ACTION_DONE ->
-                        loginViewModel.login(
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        val ret = loginViewModel.login(
+                            context,
                             email.text.toString(),
                             password.text.toString()
                         )
+                    if (!ret) {
+                        restartActivity()
+                    }
                 }
                 false
             }
 
             login.setOnClickListener {
                 loading.visibility = View.VISIBLE
-                loginViewModel.login(email.text.toString(), password.text.toString())
+                val ret = loginViewModel.login(context, email.text.toString(), password.text.toString())
+                if (!ret) {
+                    restartActivity()
+                }
             }
         }
+    }
+
+    private fun restartActivity() {
+        binding.email.text = null
+        binding.password.text = null
+        binding.loading.visibility = View.GONE
+        binding.signinBtn.isEnabled = false
     }
 
     /**
@@ -105,43 +110,30 @@ class LoginActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser != null) {
-            updateUiWithUser(LoggedInUserView(displayName = currentUser.displayName.toString()))
+        //email address is not verified
+        if (currentUser?.isEmailVerified == false) {
+            Toast.makeText(
+                baseContext, "Please verify your email address.",
+                Toast.LENGTH_SHORT
+            ).show()
+            currentUser.sendEmailVerification()
+        } else {
+            if (currentUser != null) {
+                val intent = Intent(this, MainActivity::class.java)
+                intent.putExtra(INTENT_PASS, currentUser)
+                startActivity(intent)
+                finish()
+            }
+            else {
+                showLoginFailed(R.string.login_failed)
+            }
         }
     }
 
-    private fun updateUiWithUser(model: LoggedInUserView) {
-        val welcome = getString(R.string.welcome)
-        val displayName = model.displayName
-        // initiate successful logged in experience
-        val intent = Intent(this, MainActivity::class.java)
-        Toast.makeText(
-            applicationContext,
-            "$welcome $displayName",
-            Toast.LENGTH_LONG
-        ).show()
-        startActivity(intent)
-        finish()
-    }
 
     private fun showLoginFailed(@StringRes errorString: Int) {
         Toast.makeText(applicationContext, errorString, Toast.LENGTH_SHORT).show()
     }
 
-    fun login(view: View) {}
 }
 
-/**
- * Extension function to simplify setting an afterTextChanged action to EditText components.
- */
-fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
-    this.addTextChangedListener(object : TextWatcher {
-        override fun afterTextChanged(editable: Editable?) {
-            afterTextChanged.invoke(editable.toString())
-        }
-
-        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-
-        override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
-    })
-}
