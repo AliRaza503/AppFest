@@ -5,8 +5,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.FirebaseAuth
-import com.example.app.auth.data.model.LoggedInUser
-import com.example.app.auth.data.model.User
+import com.example.app.model.LoggedInUser
+import com.example.app.model.User
 import java.util.UUID
 
 /**

@@ -1,4 +1,4 @@
-package com.example.app.auth.data.model
+package com.example.app.model
 
 import java.util.UUID
 

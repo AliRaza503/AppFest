@@ -1,7 +1,7 @@
 package com.example.app.auth.data
 
 import android.content.Context
-import com.example.app.auth.data.model.LoggedInUser
+import com.example.app.model.LoggedInUser
 
 /**
  * Class that requests authentication and user information from the remote data source and

@@ -7,8 +7,8 @@ import androidx.lifecycle.ViewModel
 import android.util.Patterns
 import com.example.app.R
 import com.example.app.auth.data.LoginRepository
-import com.example.app.auth.data.model.LoggedInUser
-import com.example.app.auth.data.model.LoggedInUser.user
+import com.example.app.model.LoggedInUser
+import com.example.app.model.LoggedInUser.user
 
 
 class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {
